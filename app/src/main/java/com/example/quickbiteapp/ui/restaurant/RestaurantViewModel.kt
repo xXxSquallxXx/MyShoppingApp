@@ -26,7 +26,6 @@ class RestaurantViewModel @Inject constructor(
                 val restaurantList = restaurantApi.getRestaurants()
                 _restaurants.value = restaurantList
             } catch (_: Exception) {
-                _restaurants.value = emptyList()
             }
         }
     }

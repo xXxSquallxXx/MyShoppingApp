@@ -20,6 +20,7 @@ object NavigationManager {
 
     fun replaceFragmentForRestaurant(fragment: Fragment) {
         fragmentManager?.let { fm ->
+            if (fm.isDestroyed) return
             val currentFragment = fm.fragments.lastOrNull()
             fm.beginTransaction().apply {
                 currentFragment?.let { remove(it) }

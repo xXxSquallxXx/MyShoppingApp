@@ -8,17 +8,28 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.quickbiteapp.databinding.FragmentMenuBinding
+import com.example.quickbiteapp.di.MainApplication
 import com.example.quickbiteapp.ui.adapter.MenuAdapter
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-class MenuFragment @Inject constructor(
-    private val viewModel: MenuViewModel?,
-    private val menuAdapter: MenuAdapter
-) : Fragment() {
+class MenuFragment : Fragment() {
+
+    var viewModel: MenuViewModel? = null
+    var menuAdapter: MenuAdapter? = null
 
     private var binding: FragmentMenuBinding? = null
     private var restaurantId: Int = 0
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (viewModel == null || menuAdapter == null) {
+            val appComponent = (requireActivity().application as MainApplication).appComponent
+            val factory = appComponent.menuFragmentFactory()
+            viewModel = factory.viewModel
+            menuAdapter = factory.menuAdapter
+        }
+        restaurantId = savedInstanceState?.getInt("restaurantId") ?: restaurantId
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,15 +43,20 @@ class MenuFragment @Inject constructor(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
-        restaurantId = arguments?.getInt("restaurantId") ?: 0
-        menuAdapter.setRestaurantId(restaurantId)
+        restaurantId = arguments?.getInt("restaurantId") ?: restaurantId
+        menuAdapter?.setRestaurantId(restaurantId)
         viewModel?.loadMenu(restaurantId)
         observeMenu()
     }
 
+    override fun onStart() {
+        super.onStart()
+        viewModel?.loadMenu(restaurantId)
+    }
+
     fun setRestaurantId(id: Int) {
         restaurantId = id
-        menuAdapter.setRestaurantId(restaurantId)
+        menuAdapter?.setRestaurantId(restaurantId)
         viewModel?.loadMenu(restaurantId)
     }
 
@@ -54,9 +70,14 @@ class MenuFragment @Inject constructor(
     private fun observeMenu() {
         lifecycleScope.launch {
             viewModel?.menuItems?.collect { items ->
-                menuAdapter.submitList(items)
+                menuAdapter?.submitList(items)
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("restaurantId", restaurantId)
     }
 
     override fun onDestroyView() {

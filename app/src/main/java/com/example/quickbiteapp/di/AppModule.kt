@@ -10,7 +10,11 @@ import com.example.quickbiteapp.data.repository.ProductRepository
 import com.example.quickbiteapp.data.model.MenuItem
 import com.example.quickbiteapp.ui.adapter.CartAdapter
 import com.example.quickbiteapp.ui.adapter.MenuAdapter
-import com.example.quickbiteapp.ui.menu.MenuItemFragment
+import com.example.quickbiteapp.ui.adapter.RestaurantAdapter
+import com.example.quickbiteapp.ui.cart.CartFragmentFactory
+import com.example.quickbiteapp.ui.menu.MenuFragmentFactory
+import com.example.quickbiteapp.ui.menu.MenuItemFragmentFactory
+import com.example.quickbiteapp.ui.restaurant.RestaurantListFragmentFactory
 import com.example.quickbiteapp.ui.restaurant.RestaurantViewModel
 import dagger.Module
 import dagger.Provides
@@ -73,11 +77,6 @@ object AppModule {
     }
 
     @Provides
-    fun provideMenuItemFragment(cartRepository: CartRepository): MenuItemFragment {
-        return MenuItemFragment(cartRepository)
-    }
-
-    @Provides
     fun provideCartAdapter(): CartAdapter {
         return CartAdapter()
     }
@@ -85,5 +84,10 @@ object AppModule {
     @Provides
     fun provideMenuAdapter(): MenuAdapter {
         return MenuAdapter()
+    }
+
+    @Provides
+    fun provideRestaurantAdapter(): RestaurantAdapter {
+        return RestaurantAdapter()
     }
 }

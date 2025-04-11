@@ -32,7 +32,7 @@ class RestaurantAdapter : ListAdapter<Restaurant, RestaurantAdapter.RestaurantVi
 
             binding.root.setOnClickListener {
                 val appComponent = (binding.root.context.applicationContext as MainApplication).appComponent
-                val menuFragment = appComponent.menuFragment()
+                val menuFragment = appComponent.menuFragmentFactory().create()
                 menuFragment.setRestaurantId(restaurant.id)
                 NavigationManager.replaceFragment(menuFragment)
             }

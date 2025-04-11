@@ -1,7 +1,6 @@
 package com.example.quickbiteapp.ui.menu
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,16 +12,38 @@ import com.example.quickbiteapp.data.model.CartItem
 import com.example.quickbiteapp.data.model.MenuItem
 import com.example.quickbiteapp.data.repository.CartRepository
 import com.example.quickbiteapp.databinding.FragmentMenuItemBinding
+import com.example.quickbiteapp.di.MainApplication
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-class MenuItemFragment @Inject constructor(
-    private val cartRepository: CartRepository
-) : Fragment() {
+class MenuItemFragment : Fragment() {
+
+    var cartRepository: CartRepository? = null
 
     private var binding: FragmentMenuItemBinding? = null
     private var menuItem: MenuItem? = null
     private var restaurantId: Int = 0
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (cartRepository == null) {
+            val appComponent = (requireActivity().application as MainApplication).appComponent
+            val factory = appComponent.menuItemFragmentFactory()
+            cartRepository = factory.cartRepository
+        }
+
+        if (savedInstanceState != null) {
+            restaurantId = savedInstanceState.getInt("restaurantId")
+            val id = savedInstanceState.getInt("menuItemId")
+            val name = savedInstanceState.getString("menuItemName")
+            val description = savedInstanceState.getString("menuItemDescription")
+            val price = savedInstanceState.getDouble("menuItemPrice")
+            val imageUrl = savedInstanceState.getString("menuItemImageUrl")
+            if (name != null && description != null && imageUrl != null) {
+                menuItem = MenuItem(id, name, description, price, imageUrl)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,11 +74,22 @@ class MenuItemFragment @Inject constructor(
         binding?.addToCartButton?.setOnClickListener {
             menuItem?.let { item ->
                 lifecycleScope.launch {
-                    val uniqueProductId = restaurantId * 100 + item.id // Уникальный productId
-                    cartRepository.insert(CartItem(restaurantId = restaurantId, productId = uniqueProductId, quantity = 1, name = item.name))
-                    Log.d("Test", "Товар добавлен в корзину: ${item.name}, ID: $uniqueProductId, Количество: 1")
+                    val uniqueProductId = restaurantId * 100 + item.id
+                    cartRepository?.insert(CartItem(restaurantId = restaurantId, productId = uniqueProductId, quantity = 1, name = item.name))
                 }
             }
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("restaurantId", restaurantId)
+        menuItem?.let {
+            outState.putInt("menuItemId", it.id)
+            outState.putString("menuItemName", it.name)
+            outState.putString("menuItemDescription", it.description)
+            outState.putDouble("menuItemPrice", it.price)
+            outState.putString("menuItemImageUrl", it.imageUrl)
         }
     }
 
